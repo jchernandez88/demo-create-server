@@ -47,6 +47,9 @@ jobs:
         id:   apply
         env:
           TF_VAR_ec2_name:  "${{ github.event.inputs.ec2-name }}"
+          TF_VAR_key_name:  "${{ github.event.inputs.key_name}}"
+          TF_VAR_aws_region:  "${{ github.event.inputs.aws_region }}"
+          TF_VAR_aws_instance_type:  "${{ github.event.inputs.aws_instance_type }}"
         run: |
           cd tf-example/
           terraform init
