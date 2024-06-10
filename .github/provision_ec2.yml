@@ -1,0 +1,56 @@
+name: Provision EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      ec2-name:
+        description: EC2 name
+        required: true
+        default: 'App Server'
+        type: string
+      key_name:
+        description: EC2 Key name
+        required: true
+        default: 'default-app-ssh-key'
+        type: string
+      aws_region:
+        description: AWS Region
+        required: true
+        type: choice
+        default: 'us-east-1'
+        options: ["us-east-1", "us-east-2"]
+      aws_instance_type:
+        description: EC2 type
+        required: true
+        default: 't3.micro'
+        type: choice
+        options: ["t3.micro", "t4.micro"]
+jobs:
+  provision-ec2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: us-east-2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+      - name: Terraform Apply
+        id:   apply
+        env:
+          TF_VAR_ec2_name:  "${{ github.event.inputs.ec2-name }}"
+        run: |
+          cd tf-example/
+          terraform init
+          terraform validate
+          terraform plan 
+          terraform apply -auto-approve
+     
